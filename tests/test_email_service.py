@@ -1,6 +1,6 @@
 import pytest
 from app.models import Car
-from app.email_service import _format_mileage, _format_price, _build_html, _build_empty_html
+from app.email_service import _format_mileage, _format_price, _build_html, _build_empty_html, _priority_summary_html
 
 
 def _car(**kwargs) -> Car:
@@ -89,6 +89,39 @@ class TestBuildHtml:
         cars = [_car(ad_id="1"), _car(ad_id="2"), _car(ad_id="3")]
         html = _build_html(cars)
         assert "<strong>3</strong>" in html
+
+
+class TestPrioritySummary:
+    def test_empty_when_no_priority(self):
+        assert _priority_summary_html([]) == ""
+
+    def test_contains_table_with_priority_cars(self):
+        cars = [
+            _car(ad_id="1", car_title="Ford Ranger 2020", is_priority=True, price=350000, year=2020, location="Stockholm"),
+            _car(ad_id="2", car_title="VW Transporter", is_priority=True, price=280000, year=2019, location="Göteborg"),
+        ]
+        html = _priority_summary_html(cars)
+        assert "Transport &amp; Pickup" in html
+        assert "2 fordon" in html
+        assert "Ford Ranger 2020" in html
+        assert "VW Transporter" in html
+        assert "#F5A623" in html
+
+    def test_summary_appears_in_full_html(self):
+        cars = [
+            _car(ad_id="1", car_title="Ford Ranger", is_priority=True, price=300000),
+            _car(ad_id="2", car_title="Volvo V60", is_priority=False, price=200000),
+        ]
+        html = _build_html(cars)
+        assert "Transport &amp; Pickup" in html
+        assert "1 fordon" in html
+        assert "transport/pickup" in html
+        assert "1 personbilar" in html
+
+    def test_no_summary_section_without_priority(self):
+        cars = [_car(ad_id="1", car_title="Volvo V60", is_priority=False)]
+        html = _build_html(cars)
+        assert "Transport &amp; Pickup" not in html
 
 
 class TestBuildEmptyHtml:
