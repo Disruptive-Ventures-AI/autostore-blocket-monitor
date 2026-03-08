@@ -24,7 +24,7 @@ async def _fetch_page_primary(client: httpx.AsyncClient, page: int) -> list[dict
     )
     resp.raise_for_status()
     data = resp.json()
-    docs = data.get("response", {}).get("docs", [])
+    docs = data.get("docs", data.get("response", {}).get("docs", []))
     return docs
 
 
@@ -42,7 +42,7 @@ async def _fetch_page_grace(client: httpx.AsyncClient, page: int) -> list[dict]:
     body = data.get("body", data)
     if isinstance(body, str):
         body = json.loads(body)
-    docs = body.get("response", {}).get("docs", [])
+    docs = body.get("docs", body.get("response", {}).get("docs", []))
     return docs
 
 
