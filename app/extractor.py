@@ -10,13 +10,6 @@ def _get(doc: dict, *keys, default=None):
     return default
 
 
-def _extract_nested(doc: dict, outer: str, inner: str):
-    obj = doc.get(outer)
-    if isinstance(obj, dict):
-        return obj.get(inner)
-    return obj
-
-
 def _extract_thumbnail(doc: dict) -> str:
     for field in ("thumbnail", "image"):
         val = doc.get(field)
@@ -84,6 +77,18 @@ def _extract_year(doc: dict) -> int | None:
         return None
 
 
+def _extract_make(doc: dict) -> str:
+    make = _get(doc, "make", "brand")
+    if make:
+        return str(make)
+    heading = _get(doc, "heading", "subject", "title", "name", default="")
+    if heading:
+        parts = str(heading).split()
+        if parts:
+            return parts[0]
+    return ""
+
+
 def extract_car(doc: dict) -> Car:
     ad_id = str(_get(doc, "id", "ad_id", "list_id", default=""))
     mileage_raw, mileage_km = _extract_mileage(doc)
@@ -95,7 +100,7 @@ def extract_car(doc: dict) -> Car:
         year=_extract_year(doc),
         mileage_raw=mileage_raw,
         mileage_km=mileage_km,
-        make=str(_get(doc, "make", "brand", default="")),
+        make=_extract_make(doc),
         fuel=str(_get(doc, "fuel", "fuel_type", default="")),
         gearbox=str(_get(doc, "gearbox", "transmission", default="")),
         location=_extract_location(doc),

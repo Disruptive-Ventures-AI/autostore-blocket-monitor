@@ -61,12 +61,10 @@ async def run_pipeline() -> dict:
     # Deduplicate within current run
     cars = deduplicate_within_run(cars)
 
-    # Stage 4: Mileage filter
-    cars = filter_mileage(cars)
-
-    # Check against seen ads
+    # Check against seen ads + Stage 4: Mileage filter
     seen_ids = await get_seen_ad_ids()
     new_cars = [c for c in cars if c.ad_id not in seen_ids]
+    new_cars = filter_mileage(new_cars)
     logger.info(json.dumps({
         "event": "dedup_complete",
         "before": len(cars),

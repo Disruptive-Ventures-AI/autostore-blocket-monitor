@@ -7,3 +7,5 @@ data/*.db
 .venv
 deploy.sh
 CLAUDE.md
+tests/
+.pytest_cache/
