@@ -1,9 +1,9 @@
 import os
 
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
-GRACE_GW_API_KEY = os.environ.get("GRACE_GW_API_KEY", "")
-TRIGGER_API_KEY = os.environ.get("TRIGGER_API_KEY", "")
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "").strip()
+GRACE_GW_API_KEY = os.environ.get("GRACE_GW_API_KEY", "").strip()
+TRIGGER_API_KEY = os.environ.get("TRIGGER_API_KEY", "").strip()
 DATABASE_PATH = os.environ.get("DATABASE_PATH", "data/blocket.db")
 EMAIL_RECIPIENTS = [
     r.strip()
