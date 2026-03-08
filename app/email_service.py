@@ -80,6 +80,46 @@ def _car_card_html(car: Car) -> str:
     </div>"""
 
 
+def _priority_summary_html(priority_cars: list[Car]) -> str:
+    if not priority_cars:
+        return ""
+
+    rows = ""
+    for car in priority_cars:
+        rows += f"""
+            <tr>
+                <td style="padding:6px 10px;border-bottom:1px solid #eee;">
+                    <a href="{car.url}" style="color:#333;text-decoration:none;font-weight:600;font-size:13px;">{car.car_title}</a>
+                </td>
+                <td style="padding:6px 10px;border-bottom:1px solid #eee;font-size:13px;white-space:nowrap;">{_format_price(car.price)}</td>
+                <td style="padding:6px 10px;border-bottom:1px solid #eee;font-size:13px;white-space:nowrap;">{car.year or '—'}</td>
+                <td style="padding:6px 10px;border-bottom:1px solid #eee;font-size:13px;white-space:nowrap;">{_format_mileage(car)}</td>
+                <td style="padding:6px 10px;border-bottom:1px solid #eee;font-size:13px;white-space:nowrap;">{car.location or '—'}</td>
+            </tr>"""
+
+    return f"""
+    <div style="background:white;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.08);
+                padding:18px;margin-bottom:20px;border-left:4px solid #F5A623;">
+        <h2 style="margin:0 0 12px;font-size:16px;color:#333;">
+            <span style="color:#F5A623;">&#9660;</span> Transport &amp; Pickup — {len(priority_cars)} fordon
+        </h2>
+        <table style="width:100%;border-collapse:collapse;">
+            <thead>
+                <tr style="background:#f9f9f9;">
+                    <th style="padding:6px 10px;text-align:left;font-size:12px;color:#888;font-weight:600;">Fordon</th>
+                    <th style="padding:6px 10px;text-align:left;font-size:12px;color:#888;font-weight:600;">Pris</th>
+                    <th style="padding:6px 10px;text-align:left;font-size:12px;color:#888;font-weight:600;">År</th>
+                    <th style="padding:6px 10px;text-align:left;font-size:12px;color:#888;font-weight:600;">Mil</th>
+                    <th style="padding:6px 10px;text-align:left;font-size:12px;color:#888;font-weight:600;">Plats</th>
+                </tr>
+            </thead>
+            <tbody>
+                {rows}
+            </tbody>
+        </table>
+    </div>"""
+
+
 def _build_html(cars: list[Car], batch_num: int = 0, total_batches: int = 0) -> str:
     priority_cars = [c for c in cars if c.is_priority]
     regular_cars = [c for c in cars if not c.is_priority]
@@ -90,9 +130,13 @@ def _build_html(cars: list[Car], batch_num: int = 0, total_batches: int = 0) -> 
         f"Hittade <strong>{len(cars)}</strong> nya bilar"
     )
     if priority_cars:
-        overview += f" varav <strong style='color:#F5A623;'>{len(priority_cars)} prioriterade</strong>"
+        overview += (
+            f" varav <strong style='color:#F5A623;'>{len(priority_cars)} "
+            f"transport/pickup</strong> och <strong>{len(regular_cars)} personbilar</strong>"
+        )
     overview += ".</p>"
 
+    priority_summary = _priority_summary_html(priority_cars)
     cards = "\n".join(_car_card_html(c) for c in sorted_cars)
 
     batch_info = ""
@@ -110,6 +154,7 @@ def _build_html(cars: list[Car], batch_num: int = 0, total_batches: int = 0) -> 
             <p style="margin:5px 0 0;opacity:0.9;font-size:14px;">Autostore Sverige AB — Automatisk bilsökning</p>
         </div>
         {overview}
+        {priority_summary}
         {cards}
         <div style="text-align:center;padding:20px 0;color:#999;font-size:12px;">
             Autostore Sverige AB — Automatisk bilsökning
