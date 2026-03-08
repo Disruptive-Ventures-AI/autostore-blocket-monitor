@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 from datetime import datetime, timezone, timedelta
+from functools import partial
 
 import resend
 
@@ -138,13 +139,20 @@ def _build_empty_html() -> str:
 </html>"""
 
 
-def _send_email(subject: str, html: str) -> None:
-    resend.Emails.send({
-        "from": EMAIL_FROM,
-        "to": EMAIL_RECIPIENTS,
-        "subject": subject,
-        "html": html,
-    })
+async def _send_email(subject: str, html: str) -> None:
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(
+        None,
+        partial(
+            resend.Emails.send,
+            {
+                "from": EMAIL_FROM,
+                "to": EMAIL_RECIPIENTS,
+                "subject": subject,
+                "html": html,
+            },
+        ),
+    )
 
 
 async def send_car_emails(cars: list[Car]) -> None:
@@ -166,7 +174,7 @@ async def send_car_emails(cars: list[Car]) -> None:
             subject = f"Nya Privatannonser -- {total_cars} bilar"
 
         html = _build_html(batch, idx, total)
-        _send_email(subject, html)
+        await _send_email(subject, html)
         logger.info(json.dumps({
             "event": "email_sent",
             "batch": idx,
@@ -191,6 +199,6 @@ async def _send_empty_email() -> None:
         except ValueError:
             pass
 
-    _send_email("Bilsokning -- Inga nya bilar", _build_empty_html())
+    await _send_email("Bilsokning -- Inga nya bilar", _build_empty_html())
     await set_run_state("last_empty_email", now.isoformat())
     logger.info(json.dumps({"event": "empty_email_sent"}))

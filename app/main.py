@@ -1,6 +1,6 @@
+import hmac
 import json
 import logging
-import os
 import sys
 
 from fastapi import FastAPI, Header, HTTPException
@@ -28,7 +28,7 @@ async def trigger(x_api_key: str = Header(alias="X-API-Key")):
     if not TRIGGER_API_KEY:
         raise HTTPException(status_code=500, detail="TRIGGER_API_KEY not configured")
 
-    if not x_api_key or x_api_key != TRIGGER_API_KEY:
+    if not x_api_key or not hmac.compare_digest(x_api_key, TRIGGER_API_KEY):
         raise HTTPException(status_code=401, detail="Invalid API key")
 
     logger.info(json.dumps({"event": "trigger_received"}))

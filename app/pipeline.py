@@ -23,7 +23,8 @@ STOCKHOLM_TZ = ZoneInfo("Europe/Stockholm")
 
 def _in_operating_hours() -> bool:
     now = datetime.now(STOCKHOLM_TZ)
-    return 6 <= now.hour <= 23
+    # 06:00-00:00 Swedish time: hours 6-23 plus midnight (hour 0)
+    return now.hour >= 6 or now.hour == 0
 
 
 async def run_pipeline() -> dict:

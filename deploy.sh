@@ -18,12 +18,12 @@ gcloud run deploy "${SERVICE_NAME}" \
   --timeout 300 \
   --max-instances 1 \
   --set-env-vars "ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}" \
-  --set-env-vars "RESEND_API_KEY=${RESEND_API_KEY}" \
-  --set-env-vars "GRACE_GW_API_KEY=${GRACE_GW_API_KEY}" \
-  --set-env-vars "TRIGGER_API_KEY=${TRIGGER_API_KEY}" \
-  --set-env-vars "DATABASE_PATH=data/blocket.db" \
-  --set-env-vars "EMAIL_RECIPIENTS=${EMAIL_RECIPIENTS}" \
-  --set-env-vars "EMAIL_FROM=${EMAIL_FROM:-blocket@autostoresverige.com}" \
+  --update-env-vars "RESEND_API_KEY=${RESEND_API_KEY}" \
+  --update-env-vars "GRACE_GW_API_KEY=${GRACE_GW_API_KEY}" \
+  --update-env-vars "TRIGGER_API_KEY=${TRIGGER_API_KEY}" \
+  --update-env-vars "DATABASE_PATH=data/blocket.db" \
+  --update-env-vars "EMAIL_RECIPIENTS=${EMAIL_RECIPIENTS}" \
+  --update-env-vars "EMAIL_FROM=${EMAIL_FROM:-blocket@autostoresverige.com}" \
   --no-allow-unauthenticated
 
 SERVICE_URL=$(gcloud run services describe "${SERVICE_NAME}" \
@@ -32,13 +32,14 @@ SERVICE_URL=$(gcloud run services describe "${SERVICE_NAME}" \
 
 echo "Service deployed at: ${SERVICE_URL}"
 
-echo "Creating Cloud Scheduler job..."
+echo "Creating Cloud Scheduler jobs..."
 gcloud scheduler jobs delete "${SERVICE_NAME}-trigger" \
   --location "${REGION}" --quiet 2>/dev/null || true
 
 gcloud scheduler jobs create http "${SERVICE_NAME}-trigger" \
   --location "${REGION}" \
   --schedule "0 6-23 * * *" \
+  --time-zone "Europe/Stockholm" \
   --uri "${SERVICE_URL}/trigger" \
   --http-method POST \
   --headers "X-API-Key=${TRIGGER_API_KEY}" \
@@ -52,6 +53,7 @@ gcloud scheduler jobs delete "${SERVICE_NAME}-trigger-midnight" \
 gcloud scheduler jobs create http "${SERVICE_NAME}-trigger-midnight" \
   --location "${REGION}" \
   --schedule "0 0 * * *" \
+  --time-zone "Europe/Stockholm" \
   --uri "${SERVICE_URL}/trigger" \
   --http-method POST \
   --headers "X-API-Key=${TRIGGER_API_KEY}" \

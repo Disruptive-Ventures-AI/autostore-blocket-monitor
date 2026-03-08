@@ -74,6 +74,16 @@ def _extract_location(doc: dict) -> str:
     return ""
 
 
+def _extract_year(doc: dict) -> int | None:
+    raw = _get(doc, "model_year", "year")
+    if raw is None:
+        return None
+    try:
+        return int(raw)
+    except (ValueError, TypeError):
+        return None
+
+
 def extract_car(doc: dict) -> Car:
     ad_id = str(_get(doc, "id", "ad_id", "list_id", default=""))
     mileage_raw, mileage_km = _extract_mileage(doc)
@@ -82,7 +92,7 @@ def extract_car(doc: dict) -> Car:
         car_title=str(_get(doc, "heading", "subject", "title", "name", default="")),
         thumbnail=_extract_thumbnail(doc),
         price=_extract_price(doc),
-        year=_get(doc, "model_year", "year"),
+        year=_extract_year(doc),
         mileage_raw=mileage_raw,
         mileage_km=mileage_km,
         make=str(_get(doc, "make", "brand", default="")),
