@@ -1,0 +1,11 @@
+.git
+.gitignore
+.env
+__pycache__
+*.pyc
+data/*.db
+.venv
+deploy.sh
+CLAUDE.md
+tests/
+.pytest_cache/
